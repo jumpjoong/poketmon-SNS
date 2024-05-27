@@ -8,9 +8,9 @@ const Trend = () => {
   const [trendlist, setTrendlist] = useState();
   const { data } = useContext(Statusgroup);
   const maxTrendLength = 5
-  const getTrendlist = () => {
+  const getTrendlist = async() => {
     let arr = [];
-    axios.get("/api/").then((res) => {
+    await axios.get("/api/").then((res) => {
       res.data.sort((a, b) => {
         return b.like_count - a.like_count;
       });
