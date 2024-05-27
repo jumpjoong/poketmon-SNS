@@ -1,0 +1,68 @@
+import prisma from "@/prisma/prisma";
+
+export default async function handler(req, res) {
+  const { method, body, query } = req;
+  //포켓몬 데이터 뿌리기
+  const getEncyclo = async () => {
+    try {
+      if (query.type === "detail") {
+        const encycloDetail = await prisma.poke_table.findUnique({
+          where: {
+            id: Number(query.id),
+          },
+        });
+        res.json(encycloDetail);
+      } else {
+        const encycloData = await prisma.poke_table.findMany();
+        res.json(encycloData);
+      }
+    } catch (err) {
+      res.send(err);
+    }
+  };
+  //보유중인 포켓몬 데이터 뽑아내기
+  const update = async () => {
+    try {
+      const data = await prisma.have_poke.findUnique({
+        where: {
+          id: body.id,
+        },
+        select: {
+          id: true,
+          poke_id: true,
+        },
+      });
+      res.json(data);
+    } catch (err) {
+      res.send(err);
+    }
+  };
+  //구매한 포켓몬 추가
+  const getPost = async () => {
+    try {
+      await prisma.have_poke.update({
+        where: {
+          id: body.id,
+        },
+        data: {
+          poke_id: body.data,
+        },
+      });
+      res.send("success");
+    } catch (err) {
+      res.send(err);
+    }
+  };
+  switch (method) {
+    case "GET":
+      await getEncyclo();
+      break;
+    case "PUT":
+      await update();
+      break;
+    case "POST":
+      await getPost();
+    default:
+      return;
+  }
+}
