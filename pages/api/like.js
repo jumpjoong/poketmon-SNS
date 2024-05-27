@@ -2,80 +2,59 @@ import prisma from "@/prisma/prisma";
 
 async function handler(req, res) {
   const { method, body, query } = req;
+
   const dataGet = async () => {
     try {
-      const listcheck = await prisma.favorite_table.findUnique({
-        where: {
-          id: Number(query.id),
-        },
+      const id = Number(query.id);
+      let listcheck = await prisma.favorite_table.findUnique({
+        where: { id },
       });
 
-      if (listcheck === null) {
-        const createlist = await prisma.favorite_table.create({
-          data: {
-            id: Number(query.id),
-            favorite_list: "",
-          },
+      if (!listcheck) {
+        listcheck = await prisma.favorite_table.create({
+          data: { id, favorite_list: "" },
         });
-        res.json(createlist);
-      } else {
-        res.json(listcheck);
       }
+
+      res.json(listcheck);
     } catch (err) {
-      res.send(err);
+      res.status(500).json({ error: "Failed to get data", details: err.message });
     }
   };
 
   const dataPut = async () => {
     try {
-      // 좋아요 리스트에 고유 키 추가
+      const id = Number(body.id);
+      const { data, type } = body;
+
+      // 좋아요 리스트 업데이트
       const favoritelistupdate = await prisma.favorite_table.update({
-        where: {
-          id: Number(body.id),
-        },
-        data: {
-          favorite_list: body.data.toString(),
-        },
+        where: { id },
+        data: { favorite_list: data.toString() },
       });
-      //좋아요 숫자 카운트 가져오기
+
+      // 좋아요 카운트 가져오기 및 업데이트
       const favoritecount = await prisma.list_table.findUnique({
-        where: {
-          id: Number(body.id),
-        },
-        select: {
-          like_count: true,
-        },
+        where: { id },
+        select: { like_count: true },
       });
-      
-      // 좋아요 카운트 숫자 담기
-      let result;
-      if (body.type === "up") {
-        result = favoritecount.like_count + 1;
-      } else if (body.type === "down") {
-        result = favoritecount.like_count - 1;
+
+      if (!favoritecount) {
+        res.status(404).json({ error: "List not found" });
+        return;
       }
-      //좋아요 카운트 계산된거 db에 업데이트
-      await prisma.list_table.update({
-        where: {
-          id: body.id,
-        },
-        data: {
-          like_count: result,
-        },
+
+      const newLikeCount = type === "up" ? favoritecount.like_count + 1 : favoritecount.like_count - 1;
+
+      const updatedLikeCount = await prisma.list_table.update({
+        where: { id },
+        data: { like_count: newLikeCount },
+        select: { like_count: true },
       });
-      //좋아요 숫자 가져오기
-      const getLike = await  prisma.list_table.findUnique({
-        where: {
-          id: Number(body.id),
-        },
-        select: {
-          like_count: true,
-        },
-      });
-      const data = {favoritelistupdate, getLike}
-      res.json(data);
+
+      res.json({ favoritelistupdate, like_count: updatedLikeCount.like_count });
     } catch (err) {
-      res.send(err);
+      res.status(500).json({ error: "Failed to update data", details: err.message });
     }
   };
 
@@ -87,7 +66,7 @@ async function handler(req, res) {
       await dataPut();
       break;
     default:
-      return;
+      return
   }
 }
 
