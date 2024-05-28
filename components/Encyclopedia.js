@@ -14,7 +14,7 @@ const Encyclopedia = () => {
   const [modalstate, setModalState] = useState(false);
   //who(유저 정보: who.id, who.credit, who.rep(대표이미지))
   const { who } = useContext(InfoUser);
-  const currentKey = useRef(0);
+  const currentKey = useRef(null);
   //포켓몬 id+1값
   const poke_key = useRef(0);
   const [status, setStatus] = useState(false);
@@ -57,22 +57,17 @@ const Encyclopedia = () => {
   const yes = () => {
     if (who.credit < currentKey.current.credit) {
       alert("구매하실 수 없습니다");
+      return 
     } else {
       //배열에 선택한 poke_id에 push
-      userHave.push(currentKey.current.id.toString());
-      //aa를 배열로 만들어서 구매한 포켓몬 추가
-      let aa;
-      userHave.map((id, key) => {
-        if (key == 0) {
-          aa = id;
-        } else {
-          aa += "," + id;
-        }
-      });
-      axios.post("/api/encyclopedia", { id: session.user.id, data: aa });
+      const updateUserHave = [...userHave, currentKey.current.id.toString()];
+      setUserHave(updateUserHave)
+      //buyPoke배열로 만들어서 구매한 포켓몬 추가
+      const buyPoke = updateUserHave.join(",");
+      axios.post("/api/encyclopedia", { id: session.user.id, data: buyPoke });
       //크레딧 관리
-      let data = who.credit - currentKey.current.credit;
-      axios.put("/api/userencyl", { id: session.user.id, data: data });
+      const updataCredit = who.credit - currentKey.current.credit;
+      axios.put("/api/userencyl", { id: session.user.id, data: updataCredit });
       location.reload();
     }
   };
@@ -89,13 +84,12 @@ const Encyclopedia = () => {
   };
 
   const pokeDetail = (key) => {
-    let data = key;
     poke_key.current = key;
     //user_table에 rep(대표 몬스터)
     // 디테일 부분은 속성 출력 / 추가로 chart.js - Radar Chart  이용해서 그래프 그려보기
     // 참고 : https://www.chartjs.org/docs/latest/charts/radar.html
     // 여기서 대표 캐릭터 설정하는게 좋을듯 대표포켓몬은 /api/auth/signup/ 으로 보내야함
-    if (!userHave.includes(data.toString())) {
+    if (!userHave.includes(key.toString())) {
       alert("구매 먼저 해주세요");
     } else {
       setStatus(!status);
@@ -106,7 +100,7 @@ const Encyclopedia = () => {
     axios.put(`/api/auth/signup/`, { id: session.user.id, key: poke_key.current });
     location.reload();
   };
-
+  console.log(poke_key)
   useEffect(() => {
     getEncyclopedia();
     havePokeGet();

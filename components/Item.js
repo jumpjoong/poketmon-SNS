@@ -4,7 +4,9 @@ import { useSession } from "next-auth/react";
 import { Statusgroup } from "@/context/StatusContext";
 import { InfoUser } from "@/context/InfoContext";
 import axios from "axios";
-import moment from "moment";
+// import moment from "moment";
+import moment from "moment-timezone";
+// import moment from "moment-timezone";
 
 const Item = ({ obj, dataGet }) => {
   const { data: session } = useSession();
@@ -13,11 +15,13 @@ const Item = ({ obj, dataGet }) => {
   const [owner, setOwner] = useState();
   const { setPageStatus, setListUpdate, contentlist } = useContext(Statusgroup);
   const { who, myfollowlist } = useContext(InfoUser);
-  const dateAll = moment(obj.date).add(9, "hours").fromNow();
-  const dateFollow = moment(obj.date).fromNow();
+  //백엔드 서버 리젼 위치 바꾸니 설정 안해도 됌
+  // const dateAll = moment(obj.date).add(9, "hours").fromNow();
+  // const dateFollow = moment(obj.date).fromNow();
+  const date = moment(obj.date).utc().tz("Asia/Seoul").fromNow();
   const [like, setLike] = useState(false);
   const [likeCount, setLikeCount] = useState(obj.like_count);
-
+  console.log(moment(obj.date).utc().tz("Asia/Seoul").fromNow())
   const getContentOwner = async () => {
     try {
       const res = await axios.get("/api/auth/who", {
@@ -117,7 +121,7 @@ const Item = ({ obj, dataGet }) => {
           </div>
           <div>
             <p className={styles.user}>{owner.name}</p>
-            <p className={styles.date}>{contentlist ? dateAll : dateFollow}</p>
+            <p className={styles.date}>{date}</p>
           </div>
         </div>
         <section className={styles.btn_m}>

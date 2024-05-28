@@ -532,16 +532,12 @@ $height: 150px;
             align-items: center;
             > div {
               line-height: 30px;
+              p {
+                text-align: right;
+              }
               &:nth-of-type(1) {
                 padding-right: 20px;
-                p {
-                  text-align: right;
-                }
-              }
-              &:nth-of-type(2) {
-                p {
-                  text-align: right;
-                }
+                
               }
             }
           }
