@@ -24,7 +24,7 @@ export default async function handler(req, res) {
         credit: body.credit + 5,
       },
     });
-    res.send("creditAdd");
+    console.log("credit add")
   };
 
   const dataPut = async () => {

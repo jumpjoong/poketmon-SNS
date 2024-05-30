@@ -1,7 +1,6 @@
-import { useContext, useEffect, useLayoutEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import axios from "axios";
 import styles from "@/styles/List.module.scss";
-import { useSession } from "next-auth/react";
 import { Statusgroup } from "@/context/StatusContext";
 import Item from "./Item";
 import { InfoUser } from "@/context/InfoContext";
